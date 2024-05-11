@@ -1,4 +1,4 @@
-import { Button, Input, Select, Spinner, Tabs, useInput, useToasts } from '@geist-ui/core'
+import { Button, Input, Select, Spinner, Tabs, Textarea, useInput, useToasts } from '@geist-ui/core'
 import { FC, useCallback, useState } from 'react'
 import useSWR from 'swr'
 import { fetchExtensionConfigs } from '../api'
@@ -17,7 +17,10 @@ async function loadModels(): Promise<string[]> {
 const ConfigPanel: FC<ConfigProps> = ({ config, models }) => {
   const [tab, setTab] = useState<ProviderType>(config.provider)
   const { bindings: apiKeyBindings } = useInput(config.configs[ProviderType.GPT3]?.apiKey ?? '')
+  const [apiUrl, setApiUrl] = useState(config.configs[ProviderType.GPT3]?.api_path ?? '')
   const [model, setModel] = useState(config.configs[ProviderType.GPT3]?.model ?? models[0])
+  const [prefix, setPrefix] = useState(config.configs[ProviderType.GPT3]?.prefix ?? '')
+  const [suffix, setSuffix] = useState(config.configs[ProviderType.GPT3]?.suffix ?? '')
   const { setToast } = useToasts()
 
   const save = useCallback(async () => {
@@ -35,10 +38,13 @@ const ConfigPanel: FC<ConfigProps> = ({ config, models }) => {
       [ProviderType.GPT3]: {
         model,
         apiKey: apiKeyBindings.value,
+        api_path: apiUrl,
+        prefix,
+        suffix,
       },
     })
     setToast({ text: 'Changes saved', type: 'success' })
-  }, [apiKeyBindings.value, model, models, setToast, tab])
+  }, [apiKeyBindings.value, model, models, setToast, tab, apiUrl, prefix, suffix])
 
   return (
     <div className="flex flex-col gap-3">
@@ -66,6 +72,16 @@ const ConfigPanel: FC<ConfigProps> = ({ config, models }) => {
                 ))}
               </Select>
               <Input htmlType="password" label="API key" scale={2 / 3} {...apiKeyBindings} />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Input label="API url" onChange={(e) => setApiUrl(e.target.value)} value={apiUrl} />
+
+              <div>Prefix</div>
+              <Textarea onChange={(e) => setPrefix(e.target.value)} value={prefix} rows={6} />
+
+              <div>Suffix</div>
+              <Textarea onChange={(e) => setSuffix(e.target.value)} value={suffix} rows={6} />
             </div>
             <span className="italic text-xs">
               You can find or create your API key{' '}

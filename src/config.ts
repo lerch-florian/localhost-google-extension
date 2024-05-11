@@ -62,7 +62,10 @@ export enum ProviderType {
 
 interface GPT3ProviderConfig {
   model: string
+  api_path: string
   apiKey: string
+  prefix: string
+  suffix: string
 }
 
 export interface ProviderConfigs {
