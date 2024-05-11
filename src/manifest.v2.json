@@ -10,13 +10,16 @@
     "48": "logo.png",
     "128": "logo.png"
   },
-  "permissions": ["storage", "https://*.openai.com/"],
+  "permissions": ["storage", "https://*.openai.com/", "scripting"],
+
   "background": {
     "scripts": ["background.js"]
   },
+
   "browser_action": {
     "default_popup": "popup.html"
   },
+
   "options_ui": {
     "page": "options.html",
     "open_in_tab": true

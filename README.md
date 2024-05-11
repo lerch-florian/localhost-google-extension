@@ -1,22 +1,30 @@
-# ChatGPT for Google
+
+## Modifications
+- changed for a locally hosted (openai style) model
+- allows for changing the scripts before and after the search prompt in the LLM request
+
+## Example Llama V3
+``` sh
+# api key
+placeholder
+
+# API url
+http://localhost:1234/v1/completions
+
+# prefix
+<|start_header_id|>system<|end_header_id|>Try to provide a concise answer to the users search query<|eot_id|>
+<|start_header_id|>user<|end_header_id|>
+
+# suffix
+<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+```
+
+
+# ChatGPT for Google Original
 
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/wong2/chatgpt-google-extension/pre-release-build.yml)
 [![Twitter Follow](https://img.shields.io/twitter/follow/chatgpt4google?style=social)](https://twitter.com/chatgpt4google)
 ![License](https://img.shields.io/github/license/wong2/chatgpt-google-extension)
-
-### Notice (2023-02-20)
-
-As this extension has been acquired, this code repository will no longer be updated from now on.
-
-# My new project: [ChatHub: All-in-one chatbot client](https://github.com/chathub-dev/chathub)
-
----
-
-A browser extension to display ChatGPT response alongside Google (and other search engines) results
-
-[Install from Chrome Web Store](https://chatgpt4google.com/chrome?utm_source=github)
-
-[Install from Mozilla Add-on Store](https://chatgpt4google.com/firefox?utm_source=github)
 
 ## Supported Search Engines
 
@@ -60,6 +68,8 @@ Enable "Allow access to search page results" in the extension management page
 3. `npm run build`
 4. Load `build/chromium/` or `build/firefox/` directory to your browser
 
+To run the firefox plugin in a normal release firefox version, it has to be signed by mozilla (can be done for private extensions as well): 
+https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/#signing-your-addons
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=wong2/chatgpt-google-extension&type=Date)](https://star-history.com/#wong2/chatgpt-google-extension&Date)
