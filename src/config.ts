@@ -73,7 +73,6 @@ interface GPTNEWProviderConfig {
   api_path: string
   apiKey: string
   system: string
-  user: string
 }
 
 export interface ProviderConfigs {

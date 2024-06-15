@@ -1,27 +1,20 @@
-import { Button, Input, Select, Spinner, Tabs, Textarea, useInput, useToasts } from '@geist-ui/core'
+import { Button, Input, Spinner, Tabs, Textarea, useInput, useToasts } from '@geist-ui/core'
 import { FC, useCallback, useState } from 'react'
 import useSWR from 'swr'
-import { fetchExtensionConfigs } from '../api'
 import { getProviderConfigs, ProviderConfigs, ProviderType, saveProviderConfigs } from '../config'
 
 interface ConfigProps {
   config: ProviderConfigs
-  models: string[]
 }
 
-async function loadModels(): Promise<string[]> {
-  const configs = await fetchExtensionConfigs()
-  return configs.openai_model_names
-}
-
-const ConfigPanel: FC<ConfigProps> = ({ config, models }) => {
+const ConfigPanel: FC<ConfigProps> = ({ config }) => {
   const [tab, setTab] = useState<ProviderType>(config.provider)
 
   const { bindings: apiKeyBindingsOld } = useInput(
     config.configs[ProviderType.GPT_OLD]?.apiKey ?? '',
   )
   const [apiUrlOld, setApiUrlOld] = useState(config.configs[ProviderType.GPT_OLD]?.api_path ?? '')
-  const [modelOld, setModelOld] = useState(config.configs[ProviderType.GPT_OLD]?.model ?? models[0])
+  const [modelOld, setModelOld] = useState(config.configs[ProviderType.GPT_OLD]?.model ?? '')
   const [prefixOld, setPrefixOld] = useState(config.configs[ProviderType.GPT_OLD]?.prefix ?? '')
   const [suffixOld, setSuffixOld] = useState(config.configs[ProviderType.GPT_OLD]?.suffix ?? '')
 
@@ -29,9 +22,8 @@ const ConfigPanel: FC<ConfigProps> = ({ config, models }) => {
     config.configs[ProviderType.GPT_NEW]?.apiKey ?? '',
   )
   const [apiUrlNew, setApiUrlNew] = useState(config.configs[ProviderType.GPT_NEW]?.api_path ?? '')
-  const [modelNew, setModelNew] = useState(config.configs[ProviderType.GPT_NEW]?.model ?? models[0])
+  const [modelNew, setModelNew] = useState(config.configs[ProviderType.GPT_NEW]?.model ?? '')
   const [systemNew, setSystemNew] = useState(config.configs[ProviderType.GPT_NEW]?.system ?? '')
-  const [userNew, setUserNew] = useState(config.configs[ProviderType.GPT_NEW]?.user ?? '')
 
   const { setToast } = useToasts()
 
@@ -39,10 +31,6 @@ const ConfigPanel: FC<ConfigProps> = ({ config, models }) => {
     if (tab === ProviderType.GPT_OLD) {
       if (!apiKeyBindingsOld.value) {
         alert('Please enter your OpenAI API key')
-        return
-      }
-      if (!modelOld || !models.includes(modelOld)) {
-        alert('Please select a valid model')
         return
       }
     }
@@ -59,14 +47,12 @@ const ConfigPanel: FC<ConfigProps> = ({ config, models }) => {
         apiKey: apiKeyBindingsNew.value,
         api_path: apiUrlNew,
         system: systemNew,
-        user: userNew,
       },
     })
     setToast({ text: 'Changes saved', type: 'success' })
   }, [
     apiKeyBindingsOld.value,
     modelOld,
-    models,
     setToast,
     tab,
     apiUrlOld,
@@ -76,7 +62,6 @@ const ConfigPanel: FC<ConfigProps> = ({ config, models }) => {
     apiKeyBindingsNew.value,
     apiUrlNew,
     systemNew,
-    userNew,
   ])
 
   return (
@@ -88,19 +73,14 @@ const ConfigPanel: FC<ConfigProps> = ({ config, models }) => {
               OpenAI official API, more stable,{' '}
               <span className="font-semibold">charge by usage</span>
             </span>
+
             <div className="flex flex-row gap-2">
-              <Select
-                scale={2 / 3}
+              <Input
+                label="Model Name"
                 value={modelOld}
-                onChange={(v) => setModelOld(v as string)}
-                placeholder="model"
-              >
-                {models.map((m) => (
-                  <Select.Option key={m} value={m}>
-                    {m}
-                  </Select.Option>
-                ))}
-              </Select>
+                onChange={(e) => setModelOld(e.target.value)}
+              />
+
               <Input htmlType="password" label="API key" scale={2 / 3} {...apiKeyBindingsOld} />
             </div>
 
@@ -127,18 +107,12 @@ const ConfigPanel: FC<ConfigProps> = ({ config, models }) => {
               <span className="font-semibold">charge by usage</span>
             </span>
             <div className="flex flex-row gap-2">
-              <Select
-                scale={2 / 3}
-                value={modelOld}
-                onChange={(v) => setModelNew(v as string)}
-                placeholder="model"
-              >
-                {models.map((m) => (
-                  <Select.Option key={m} value={m}>
-                    {m}
-                  </Select.Option>
-                ))}
-              </Select>
+              <Input
+                label="Model Name"
+                value={modelNew}
+                onChange={(e) => setModelNew(e.target.value)}
+              />
+
               <Input htmlType="password" label="API key" scale={2 / 3} {...apiKeyBindingsNew} />
             </div>
 
@@ -151,9 +125,6 @@ const ConfigPanel: FC<ConfigProps> = ({ config, models }) => {
 
               <div>System</div>
               <Textarea onChange={(e) => setSystemNew(e.target.value)} value={systemNew} rows={6} />
-
-              <div>User</div>
-              <Textarea onChange={(e) => setUserNew(e.target.value)} value={userNew} rows={6} />
             </div>
           </div>
         </Tabs.Item>
@@ -167,13 +138,13 @@ const ConfigPanel: FC<ConfigProps> = ({ config, models }) => {
 
 function ProviderSelect() {
   const query = useSWR('provider-configs', async () => {
-    const [config, models] = await Promise.all([getProviderConfigs(), loadModels()])
-    return { config, models }
+    const [config] = await Promise.all([getProviderConfigs()])
+    return { config }
   })
   if (query.isLoading) {
     return <Spinner />
   }
-  return <ConfigPanel config={query.data!.config} models={query.data!.models} />
+  return <ConfigPanel config={query.data!.config} />
 }
 
 export default ProviderSelect

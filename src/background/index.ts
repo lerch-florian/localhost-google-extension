@@ -13,8 +13,8 @@ async function generateAnswers(port: Browser.Runtime.Port, question: string) {
       providerConfigs.configs[ProviderType.GPT_OLD]!
     provider = new OpenAIProviderOld(apiKey, model, api_path, prefix, suffix)
   } else if (providerConfigs.provider === ProviderType.GPT_NEW) {
-    const { apiKey, model, api_path, system, user } = providerConfigs.configs[ProviderType.GPT_NEW]!
-    provider = new OpenAIProviderNew(apiKey, model, api_path, system, user)
+    const { apiKey, model, api_path, system } = providerConfigs.configs[ProviderType.GPT_NEW]!
+    provider = new OpenAIProviderNew(apiKey, model, api_path, system)
   } else {
     throw new Error(`Unknown provider ${providerConfigs.provider}`)
   }
