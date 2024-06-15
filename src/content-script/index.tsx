@@ -7,8 +7,6 @@ import { config, SearchEngine } from './search-engine-configs'
 import './styles.scss'
 import { getPossibleElementByQuerySelector } from './utils'
 
-console.debug('Chatgpt: content script gets loaded')
-
 async function mount(question: string, siteConfig: SearchEngine) {
   console.debug('Chatgpt: Running the Mounting', siteConfig)
   const container = document.createElement('div')

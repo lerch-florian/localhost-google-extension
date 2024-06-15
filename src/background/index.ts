@@ -9,9 +9,9 @@ async function generateAnswers(port: Browser.Runtime.Port, question: string) {
 
   let provider: Provider
   if (providerConfigs.provider === ProviderType.GPT_OLD) {
-    const { apiKey, model, api_path, prefix, suffix } =
+    const { apiKey, model, api_path, prefix, suffix, message_end_sign } =
       providerConfigs.configs[ProviderType.GPT_OLD]!
-    provider = new OpenAIProviderOld(apiKey, model, api_path, prefix, suffix)
+    provider = new OpenAIProviderOld(apiKey, model, api_path, prefix, suffix, message_end_sign)
   } else if (providerConfigs.provider === ProviderType.GPT_NEW) {
     const { apiKey, model, api_path, system } = providerConfigs.configs[ProviderType.GPT_NEW]!
     provider = new OpenAIProviderNew(apiKey, model, api_path, system)
@@ -29,6 +29,7 @@ async function generateAnswers(port: Browser.Runtime.Port, question: string) {
     prompt: question,
     signal: controller.signal,
     onEvent(event) {
+      console.debug('onEvent', event)
       if (event.type === 'done') {
         port.postMessage({ event: 'DONE' })
         return

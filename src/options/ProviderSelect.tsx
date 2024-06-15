@@ -17,6 +17,9 @@ const ConfigPanel: FC<ConfigProps> = ({ config }) => {
   const [modelOld, setModelOld] = useState(config.configs[ProviderType.GPT_OLD]?.model ?? '')
   const [prefixOld, setPrefixOld] = useState(config.configs[ProviderType.GPT_OLD]?.prefix ?? '')
   const [suffixOld, setSuffixOld] = useState(config.configs[ProviderType.GPT_OLD]?.suffix ?? '')
+  const [messageEndSignOld, setMessageEndSignOld] = useState(
+    config.configs[ProviderType.GPT_OLD]?.message_end_sign ?? '',
+  )
 
   const { bindings: apiKeyBindingsNew } = useInput(
     config.configs[ProviderType.GPT_NEW]?.apiKey ?? '',
@@ -41,6 +44,7 @@ const ConfigPanel: FC<ConfigProps> = ({ config }) => {
         api_path: apiUrlOld,
         prefix: prefixOld,
         suffix: suffixOld,
+        message_end_sign: messageEndSignOld,
       },
       [ProviderType.GPT_NEW]: {
         model: modelNew,
@@ -96,6 +100,12 @@ const ConfigPanel: FC<ConfigProps> = ({ config }) => {
 
               <div>Suffix</div>
               <Textarea onChange={(e) => setSuffixOld(e.target.value)} value={suffixOld} rows={6} />
+
+              <div>Message End Sign</div>
+              <Input
+                onChange={(e) => setMessageEndSignOld(e.target.value)}
+                value={messageEndSignOld}
+              />
             </div>
           </div>
         </Tabs.Item>

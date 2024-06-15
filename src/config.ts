@@ -66,6 +66,7 @@ interface GPTOLDProviderConfig {
   apiKey: string
   prefix: string
   suffix: string
+  message_end_sign: string
 }
 
 interface GPTNEWProviderConfig {

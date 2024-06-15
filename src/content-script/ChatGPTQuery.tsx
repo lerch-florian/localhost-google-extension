@@ -5,7 +5,6 @@ import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 import Browser from 'webextension-polyfill'
 import { Answer } from '../messaging'
-import { isBraveBrowser, shouldShowRatingTip } from './utils.js'
 
 export type QueryStatus = 'success' | 'error' | undefined
 
@@ -19,7 +18,6 @@ function ChatGPTQuery(props: Props) {
   const [error, setError] = useState('')
   const [retry, setRetry] = useState(0)
   const [done, setDone] = useState(false)
-  const [showTip, setShowTip] = useState(false)
   const [status, setStatus] = useState<QueryStatus>()
 
   useEffect(() => {
@@ -61,10 +59,6 @@ function ChatGPTQuery(props: Props) {
     }
   }, [error])
 
-  useEffect(() => {
-    shouldShowRatingTip().then((show) => setShowTip(show))
-  }, [])
-
   const openOptionsPage = useCallback(() => {
     Browser.runtime.sendMessage({ type: 'OPEN_OPTIONS_PAGE' })
   }, [])
@@ -73,7 +67,7 @@ function ChatGPTQuery(props: Props) {
     return (
       <div className="markdown-body gpt-markdown" id="gpt-answer" dir="auto">
         <div className="gpt-header">
-          <span className="font-bold">ChatGPT</span>
+          <span className="font-bold">LLM</span>
           <span className="cursor-pointer leading-[0]" onClick={openOptionsPage}>
             <GearIcon size={14} />
           </span>
@@ -81,52 +75,10 @@ function ChatGPTQuery(props: Props) {
         <ReactMarkdown rehypePlugins={[[rehypeHighlight, { detect: true }]]}>
           {answer.text}
         </ReactMarkdown>
-        {done && showTip && (
-          <p className="italic mt-2">
-            Enjoy this extension? Give us a 5-star rating at{' '}
-            <a
-              href="https://chatgpt4google.com/chrome?utm_source=rating_tip"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Chrome Web Store
-            </a>
-          </p>
-        )}
       </div>
     )
   }
 
-  if (error === 'UNAUTHORIZED' || error === 'CLOUDFLARE') {
-    return (
-      <p>
-        Please login and pass Cloudflare check at{' '}
-        <a href="https://chat.openai.com" target="_blank" rel="noreferrer">
-          chat.openai.com
-        </a>
-        {retry > 0 &&
-          (() => {
-            if (isBraveBrowser()) {
-              return (
-                <span className="block mt-2">
-                  Still not working? Follow{' '}
-                  <a href="https://github.com/wong2/chat-gpt-google-extension#troubleshooting">
-                    Brave Troubleshooting
-                  </a>
-                </span>
-              )
-            } else {
-              return (
-                <span className="italic block mt-2 text-xs">
-                  OpenAI requires passing a security check every once in a while. If this keeps
-                  happening, change AI provider to OpenAI API in the extension options.
-                </span>
-              )
-            }
-          })()}
-      </p>
-    )
-  }
   if (error) {
     return (
       <p>

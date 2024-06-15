@@ -14,26 +14,9 @@ export class OpenAIProviderNew implements Provider {
     this.system = system
   }
 
-  private buildPrompt(prompt: string): string {
-    // return `${this.prefix} ${prompt} ${this.suffix}`
-
-    return `<|start_header_id|>user<|end_header_id|>
-        ${prompt} <|eot_id|>
-      <|start_header_id|>assistant<|end_header_id|>`
-
-    return `<|start_header_id|>system<|end_header_id|>
-        Respond conversationally. <|eot_id|>
-      <|start_header_id|>user<|end_header_id|>
-        ${prompt} <|eot_id|>
-      <|start_header_id|>assistant<|end_header_id|>`
-
-    return prompt
-  }
-
   async generateAnswer(params: GenerateAnswerParams) {
     let result = ''
-    // await fetchSSE('https://api.openai.com/v1/completions', {
-    // await fetchSSE('http://localhost:1234/v1/completions', {
+
     await fetchSSE(this.api_path, {
       method: 'POST',
       signal: params.signal,
@@ -59,9 +42,10 @@ export class OpenAIProviderNew implements Provider {
         let data
         try {
           data = JSON.parse(message)
-          const text = data.choices[0].text
+          console.debug('parsed data', data)
+          const text = data.choices[0].delta.content
           // if (text === '<|im_end|>' || text === '<|im_sep|>') {
-          if (text === '<|eot_id|>') {
+          if (data.choices[0].finish_reason === 'stop') {
             return
           }
           result += text
@@ -79,6 +63,7 @@ export class OpenAIProviderNew implements Provider {
         }
       },
     })
+    console.log('fetchSSE done')
     return {}
   }
 }
