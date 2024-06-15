@@ -1,19 +1,20 @@
 import Browser from 'webextension-polyfill'
 import { getProviderConfigs, ProviderType } from '../config'
-import { ChatGPTProvider, getChatGPTAccessToken, sendMessageFeedback } from './providers/chatgpt'
-import { OpenAIProvider } from './providers/openai'
+import { OpenAIProviderNew } from './providers/openai_new'
+import { OpenAIProviderOld } from './providers/openai_old'
 import { Provider } from './types'
 
 async function generateAnswers(port: Browser.Runtime.Port, question: string) {
   const providerConfigs = await getProviderConfigs()
 
   let provider: Provider
-  if (providerConfigs.provider === ProviderType.ChatGPT) {
-    const token = await getChatGPTAccessToken()
-    provider = new ChatGPTProvider(token)
-  } else if (providerConfigs.provider === ProviderType.GPT3) {
-    const { apiKey, model, api_path, prefix, suffix } = providerConfigs.configs[ProviderType.GPT3]!
-    provider = new OpenAIProvider(apiKey, model, api_path, prefix, suffix)
+  if (providerConfigs.provider === ProviderType.GPT_OLD) {
+    const { apiKey, model, api_path, prefix, suffix } =
+      providerConfigs.configs[ProviderType.GPT_OLD]!
+    provider = new OpenAIProviderOld(apiKey, model, api_path, prefix, suffix)
+  } else if (providerConfigs.provider === ProviderType.GPT_NEW) {
+    const { apiKey, model, api_path, system, user } = providerConfigs.configs[ProviderType.GPT_NEW]!
+    provider = new OpenAIProviderNew(apiKey, model, api_path, system, user)
   } else {
     throw new Error(`Unknown provider ${providerConfigs.provider}`)
   }
@@ -47,17 +48,6 @@ Browser.runtime.onConnect.addListener((port) => {
       port.postMessage({ error: err.message })
     }
   })
-})
-
-Browser.runtime.onMessage.addListener(async (message) => {
-  if (message.type === 'FEEDBACK') {
-    const token = await getChatGPTAccessToken()
-    await sendMessageFeedback(token, message.data)
-  } else if (message.type === 'OPEN_OPTIONS_PAGE') {
-    Browser.runtime.openOptionsPage()
-  } else if (message.type === 'GET_ACCESS_TOKEN') {
-    return getChatGPTAccessToken()
-  }
 })
 
 Browser.runtime.onInstalled.addListener((details) => {

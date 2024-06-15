@@ -16,43 +16,73 @@ async function loadModels(): Promise<string[]> {
 
 const ConfigPanel: FC<ConfigProps> = ({ config, models }) => {
   const [tab, setTab] = useState<ProviderType>(config.provider)
-  const { bindings: apiKeyBindings } = useInput(config.configs[ProviderType.GPT3]?.apiKey ?? '')
-  const [apiUrl, setApiUrl] = useState(config.configs[ProviderType.GPT3]?.api_path ?? '')
-  const [model, setModel] = useState(config.configs[ProviderType.GPT3]?.model ?? models[0])
-  const [prefix, setPrefix] = useState(config.configs[ProviderType.GPT3]?.prefix ?? '')
-  const [suffix, setSuffix] = useState(config.configs[ProviderType.GPT3]?.suffix ?? '')
+
+  const { bindings: apiKeyBindingsOld } = useInput(
+    config.configs[ProviderType.GPT_OLD]?.apiKey ?? '',
+  )
+  const [apiUrlOld, setApiUrlOld] = useState(config.configs[ProviderType.GPT_OLD]?.api_path ?? '')
+  const [modelOld, setModelOld] = useState(config.configs[ProviderType.GPT_OLD]?.model ?? models[0])
+  const [prefixOld, setPrefixOld] = useState(config.configs[ProviderType.GPT_OLD]?.prefix ?? '')
+  const [suffixOld, setSuffixOld] = useState(config.configs[ProviderType.GPT_OLD]?.suffix ?? '')
+
+  const { bindings: apiKeyBindingsNew } = useInput(
+    config.configs[ProviderType.GPT_NEW]?.apiKey ?? '',
+  )
+  const [apiUrlNew, setApiUrlNew] = useState(config.configs[ProviderType.GPT_NEW]?.api_path ?? '')
+  const [modelNew, setModelNew] = useState(config.configs[ProviderType.GPT_NEW]?.model ?? models[0])
+  const [systemNew, setSystemNew] = useState(config.configs[ProviderType.GPT_NEW]?.system ?? '')
+  const [userNew, setUserNew] = useState(config.configs[ProviderType.GPT_NEW]?.user ?? '')
+
   const { setToast } = useToasts()
 
   const save = useCallback(async () => {
-    if (tab === ProviderType.GPT3) {
-      if (!apiKeyBindings.value) {
+    if (tab === ProviderType.GPT_OLD) {
+      if (!apiKeyBindingsOld.value) {
         alert('Please enter your OpenAI API key')
         return
       }
-      if (!model || !models.includes(model)) {
+      if (!modelOld || !models.includes(modelOld)) {
         alert('Please select a valid model')
         return
       }
     }
     await saveProviderConfigs(tab, {
-      [ProviderType.GPT3]: {
-        model,
-        apiKey: apiKeyBindings.value,
-        api_path: apiUrl,
-        prefix,
-        suffix,
+      [ProviderType.GPT_OLD]: {
+        model: modelOld,
+        apiKey: apiKeyBindingsNew.value,
+        api_path: apiUrlOld,
+        prefix: prefixOld,
+        suffix: suffixOld,
+      },
+      [ProviderType.GPT_NEW]: {
+        model: modelNew,
+        apiKey: apiKeyBindingsNew.value,
+        api_path: apiUrlNew,
+        system: systemNew,
+        user: userNew,
       },
     })
     setToast({ text: 'Changes saved', type: 'success' })
-  }, [apiKeyBindings.value, model, models, setToast, tab, apiUrl, prefix, suffix])
+  }, [
+    apiKeyBindingsOld.value,
+    modelOld,
+    models,
+    setToast,
+    tab,
+    apiUrlOld,
+    prefixOld,
+    suffixOld,
+    modelNew,
+    apiKeyBindingsNew.value,
+    apiUrlNew,
+    systemNew,
+    userNew,
+  ])
 
   return (
     <div className="flex flex-col gap-3">
       <Tabs value={tab} onChange={(v) => setTab(v as ProviderType)}>
-        <Tabs.Item label="ChatGPT webapp" value={ProviderType.ChatGPT}>
-          The API that powers ChatGPT webapp, free, but sometimes unstable
-        </Tabs.Item>
-        <Tabs.Item label="OpenAI API" value={ProviderType.GPT3}>
+        <Tabs.Item label="OpenAI API LEGACY" value={ProviderType.GPT_OLD}>
           <div className="flex flex-col gap-2">
             <span>
               OpenAI official API, more stable,{' '}
@@ -61,8 +91,8 @@ const ConfigPanel: FC<ConfigProps> = ({ config, models }) => {
             <div className="flex flex-row gap-2">
               <Select
                 scale={2 / 3}
-                value={model}
-                onChange={(v) => setModel(v as string)}
+                value={modelOld}
+                onChange={(v) => setModelOld(v as string)}
                 placeholder="model"
               >
                 {models.map((m) => (
@@ -71,28 +101,60 @@ const ConfigPanel: FC<ConfigProps> = ({ config, models }) => {
                   </Select.Option>
                 ))}
               </Select>
-              <Input htmlType="password" label="API key" scale={2 / 3} {...apiKeyBindings} />
+              <Input htmlType="password" label="API key" scale={2 / 3} {...apiKeyBindingsOld} />
             </div>
 
             <div className="flex flex-col gap-2">
-              <Input label="API url" onChange={(e) => setApiUrl(e.target.value)} value={apiUrl} />
+              <Input
+                label="API url"
+                onChange={(e) => setApiUrlOld(e.target.value)}
+                value={apiUrlOld}
+              />
 
               <div>Prefix</div>
-              <Textarea onChange={(e) => setPrefix(e.target.value)} value={prefix} rows={6} />
+              <Textarea onChange={(e) => setPrefixOld(e.target.value)} value={prefixOld} rows={6} />
 
               <div>Suffix</div>
-              <Textarea onChange={(e) => setSuffix(e.target.value)} value={suffix} rows={6} />
+              <Textarea onChange={(e) => setSuffixOld(e.target.value)} value={suffixOld} rows={6} />
             </div>
-            <span className="italic text-xs">
-              You can find or create your API key{' '}
-              <a
-                href="https://platform.openai.com/account/api-keys"
-                target="_blank"
-                rel="noreferrer"
-              >
-                here
-              </a>
+          </div>
+        </Tabs.Item>
+
+        <Tabs.Item label="OpenAI API NEW" value={ProviderType.GPT_NEW}>
+          <div className="flex flex-col gap-2">
+            <span>
+              OpenAI official API, more stable,{' '}
+              <span className="font-semibold">charge by usage</span>
             </span>
+            <div className="flex flex-row gap-2">
+              <Select
+                scale={2 / 3}
+                value={modelOld}
+                onChange={(v) => setModelNew(v as string)}
+                placeholder="model"
+              >
+                {models.map((m) => (
+                  <Select.Option key={m} value={m}>
+                    {m}
+                  </Select.Option>
+                ))}
+              </Select>
+              <Input htmlType="password" label="API key" scale={2 / 3} {...apiKeyBindingsNew} />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Input
+                label="API url"
+                onChange={(e) => setApiUrlNew(e.target.value)}
+                value={apiUrlNew}
+              />
+
+              <div>System</div>
+              <Textarea onChange={(e) => setSystemNew(e.target.value)} value={systemNew} rows={6} />
+
+              <div>User</div>
+              <Textarea onChange={(e) => setUserNew(e.target.value)} value={userNew} rows={6} />
+            </div>
           </div>
         </Tabs.Item>
       </Tabs>

@@ -4,9 +4,7 @@ import { memo, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 import Browser from 'webextension-polyfill'
-import { captureEvent } from '../analytics'
 import { Answer } from '../messaging'
-import ChatGPTFeedback from './ChatGPTFeedback'
 import { isBraveBrowser, shouldShowRatingTip } from './utils.js'
 
 export type QueryStatus = 'success' | 'error' | undefined
@@ -67,12 +65,6 @@ function ChatGPTQuery(props: Props) {
     shouldShowRatingTip().then((show) => setShowTip(show))
   }, [])
 
-  useEffect(() => {
-    if (status === 'success') {
-      captureEvent('show_answer', { host: location.host, language: navigator.language })
-    }
-  }, [props.question, status])
-
   const openOptionsPage = useCallback(() => {
     Browser.runtime.sendMessage({ type: 'OPEN_OPTIONS_PAGE' })
   }, [])
@@ -85,11 +77,6 @@ function ChatGPTQuery(props: Props) {
           <span className="cursor-pointer leading-[0]" onClick={openOptionsPage}>
             <GearIcon size={14} />
           </span>
-          <ChatGPTFeedback
-            messageId={answer.messageId}
-            conversationId={answer.conversationId}
-            answerText={answer.text}
-          />
         </div>
         <ReactMarkdown rehypePlugins={[[rehypeHighlight, { detect: true }]]}>
           {answer.text}
